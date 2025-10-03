@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import SetupWorkspace from "@/pages/auth/setup-workspace.tsx";
 import LoginPage from "@/pages/auth/login";
+import { LdapLoginPage } from "@/pages/auth/ldap-login";
 import Home from "@/pages/dashboard/home";
 import Page from "@/pages/page/page";
 import AccountSettings from "@/pages/settings/account/account-settings";
@@ -46,6 +47,7 @@ export default function App() {
       <Routes>
         <Route index element={<Navigate to="/home" />} />
         <Route path={"/login"} element={<LoginPage />} />
+        <Route path={"/ldap-login"} element={<LdapLoginPage />} />
         <Route path={"/invites/:invitationId"} element={<InviteSignup />} />
         <Route path={"/forgot-password"} element={<ForgotPassword />} />
         <Route path={"/password-reset"} element={<PasswordReset />} />

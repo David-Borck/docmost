@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import classes from "./auth.module.css";
 import { useNavigate } from "react-router-dom";
-import APP_ROUTE from "@/lib/app-route.ts";
+import APP_ROUTE from "@/lib/app-route";
 import { useTranslation } from "react-i18next";
 import { notifications } from "@mantine/notifications";
 import { loginLdap } from "@/features/auth/services/auth-service";

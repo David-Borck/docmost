@@ -247,7 +247,15 @@ apps/server/src/integrations/environment/environment.service.ts  # LDAP config g
 apps/client/src/features/auth/components/ldap-login-form.tsx  # LDAP login form
 apps/client/src/pages/auth/ldap-login.tsx                     # LDAP login page
 apps/client/src/features/auth/services/auth-service.ts        # loginLdap() function
+apps/client/src/App.tsx                                        # Route configuration
+apps/client/src/lib/app-route.ts                              # Route constants
 ```
+
+**Frontend Route Configuration**:
+
+The LDAP login page is accessible at `/ldap-login` and is configured in:
+- **Route constant**: `APP_ROUTE.AUTH.LDAP_LOGIN` in `app-route.ts`
+- **Route definition**: `<Route path={"/ldap-login"} element={<LdapLoginPage />} />` in `App.tsx`
 
 **Configuration**:
 

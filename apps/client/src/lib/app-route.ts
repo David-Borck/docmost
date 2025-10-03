@@ -4,6 +4,7 @@ const APP_ROUTE = {
   SEARCH: "/search",
   AUTH: {
     LOGIN: "/login",
+    LDAP_LOGIN: "/ldap-login",
     SIGNUP: "/signup",
     SETUP: "/setup/register",
     FORGOT_PASSWORD: "/forgot-password",
