@@ -46,8 +46,8 @@ api.interceptors.response.use(
             return Promise.reject(error);
           }
 
-          // Handle unauthorized error by redirecting
-          window.location.href = APP_ROUTE.AUTH.LOGIN;
+          // Handle unauthorized error by redirecting to LDAP login
+          window.location.href = APP_ROUTE.AUTH.LDAP_LOGIN;
           // Return a never-resolving promise to prevent error propagation during redirect
           return new Promise(() => {});
         }
