@@ -1,5 +1,5 @@
-FROM node:22-alpine AS base
-LABEL org.opencontainers.image.source="https://github.com/docmost/docmost"
+FROM node:24-alpine AS base
+LABEL org.opencontainers.image.source="https://github.com/David-Borck/docmost"
 
 FROM base AS builder
 
@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN npm install -g pnpm@10.4.0
+RUN npm install -g pnpm@10.18.0
 RUN pnpm install --frozen-lockfile
 RUN pnpm build
 
@@ -33,7 +33,7 @@ COPY --from=builder /app/pnpm*.yaml /app/
 # Copy patches
 COPY --from=builder /app/patches /app/patches
 
-RUN npm install -g pnpm@10.4.0
+RUN npm install -g pnpm@10.18.0
 
 RUN chown -R node:node /app
 

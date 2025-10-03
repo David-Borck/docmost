@@ -1,6 +1,6 @@
 services:
   docmost:
-    image: docmost/docmost:latest
+    image: registry.david-borck.de/docmost:latest
     depends_on:
       - db
       - redis
@@ -9,6 +9,14 @@ services:
       APP_SECRET: 'REPLACE_WITH_LONG_SECRET'
       DATABASE_URL: 'postgresql://docmost:STRONG_DB_PASSWORD@db:5432/docmost?schema=public'
       REDIS_URL: 'redis://redis:6379'
+      # LDAP Authentication (optional)
+      # LDAP_URL: 'ldap://ldap.example.com:389'
+      # LDAP_BIND_DN: 'cn=admin,dc=example,dc=com'
+      # LDAP_BIND_PASSWORD: 'admin_password'
+      # LDAP_BASE_DN: 'ou=users,dc=example,dc=com'
+      # LDAP_USER_FILTER: '(mail={{username}})'
+      # LDAP_TLS_ENABLED: 'false'
+      # LDAP_ALLOW_SIGNUP: 'true'
     ports:
       - "3000:3000"
     restart: unless-stopped

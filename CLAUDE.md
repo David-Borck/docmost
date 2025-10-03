@@ -295,6 +295,53 @@ Use `LdapService.testConnection()` method to verify LDAP configuration without a
 - CA certificate validation enabled when TLS is used
 - Failed authentication attempts logged for monitoring
 
+## Docker Deployment
+
+This fork is configured to build and push to a custom registry at `registry.david-borck.de`.
+
+**Build and Push to Registry**:
+
+```bash
+# Build and push with version tag
+./build-and-push.sh v1.0.0
+
+# Build and push as latest
+./build-and-push.sh latest
+
+# Or manually:
+docker build -t registry.david-borck.de/docmost:latest .
+docker push registry.david-borck.de/docmost:latest
+```
+
+**Deploy with Docker Compose**:
+
+The `docker-compose.yml` is configured to use the custom registry image:
+
+```bash
+# Configure LDAP in docker-compose.yml environment section
+# Uncomment and set LDAP_* variables
+
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f docmost
+```
+
+**LDAP Configuration in Docker**:
+
+Uncomment and configure these environment variables in `docker-compose.yml`:
+
+```yaml
+LDAP_URL: 'ldap://192.168.50.11'
+LDAP_BIND_DN: 'CN=Edgerunner,OU=Service-Accounts,OU=David-Borck,DC=David-Borck,DC=local'
+LDAP_BIND_PASSWORD: 'daeshiT7'
+LDAP_BASE_DN: 'OU=Benutzer,OU=David-Borck,DC=David-Borck,DC=local'
+LDAP_USER_FILTER: '(sAMAccountName={{username}})'
+LDAP_TLS_ENABLED: 'false'
+LDAP_ALLOW_SIGNUP: 'true'
+```
+
 ## Important Notes
 
 - This is a monorepo managed by NX - use `nx` commands for cross-project operations
