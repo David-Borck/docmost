@@ -7,6 +7,7 @@ import {
   Res,
   UseGuards,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
 import { LdapLoginDto } from './dto/ldap-login.dto';

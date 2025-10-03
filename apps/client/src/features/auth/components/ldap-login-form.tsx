@@ -45,7 +45,10 @@ export function LdapLoginForm() {
     setIsLoading(true);
 
     try {
-      await loginLdap(data);
+      await loginLdap({
+        username: data.username,
+        password: data.password,
+      });
       setIsLoading(false);
       navigate(APP_ROUTE.HOME);
     } catch (err) {

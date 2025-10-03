@@ -102,7 +102,8 @@ export class LdapService {
         await client.bind(userDn, password);
         this.logger.debug(`Successfully authenticated user: ${username}`);
       } catch (bindError) {
-        this.logger.warn(`Failed to bind as user ${userDn}: ${bindError.message}`);
+        const errorMessage = bindError instanceof Error ? bindError.message : 'Unknown error';
+        this.logger.warn(`Failed to bind as user ${userDn}: ${errorMessage}`);
         throw new UnauthorizedException('Invalid credentials');
       }
 
@@ -150,13 +151,16 @@ export class LdapService {
         throw error;
       }
 
-      this.logger.error(`LDAP authentication error: ${error.message}`, error.stack);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`LDAP authentication error: ${errorMessage}`, errorStack);
       throw new UnauthorizedException('LDAP authentication failed');
     } finally {
       try {
         await client.unbind();
       } catch (unbindError) {
-        this.logger.warn(`Error unbinding LDAP client: ${unbindError.message}`);
+        const errorMessage = unbindError instanceof Error ? unbindError.message : 'Unknown error';
+        this.logger.warn(`Error unbinding LDAP client: ${errorMessage}`);
       }
     }
   }
@@ -191,7 +195,8 @@ export class LdapService {
       await client.unbind();
       return true;
     } catch (error) {
-      this.logger.error(`LDAP connection test failed: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`LDAP connection test failed: ${errorMessage}`);
       return false;
     }
   }
