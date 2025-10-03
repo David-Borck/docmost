@@ -5,7 +5,10 @@ import { FastifyRequest } from 'fastify';
 
 export const envPath = path.resolve(process.cwd(), '..', '..', '.env');
 
-export async function hashPassword(password: string) {
+export async function hashPassword(password: string | null): Promise<string | null> {
+  if (password === null || password === undefined) {
+    return null;
+  }
   const saltRounds = 12;
   return bcrypt.hash(password, saltRounds);
 }

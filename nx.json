@@ -12,5 +12,6 @@
   },
   "affected": {
     "defaultBase": "main"
-  }
+  },
+  "useDaemonProcess": false
 }

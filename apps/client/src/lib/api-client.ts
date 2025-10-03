@@ -25,12 +25,31 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401: {
           const url = new URL(error.request.responseURL)?.pathname;
-          if (url === "/api/auth/collab-token") return;
-          if (window.location.pathname.startsWith("/share/")) return;
+          if (url === "/api/auth/collab-token") return Promise.reject(error);
+          if (window.location.pathname.startsWith("/share/")) return Promise.reject(error);
 
-          // Handle unauthorized error
-          redirectToLogin();
-          break;
+          // Check if we're on an exempt path (already on login/signup page)
+          const exemptPaths = [
+            APP_ROUTE.AUTH.LOGIN,
+            APP_ROUTE.AUTH.LDAP_LOGIN,
+            APP_ROUTE.AUTH.SIGNUP,
+            APP_ROUTE.AUTH.FORGOT_PASSWORD,
+            APP_ROUTE.AUTH.PASSWORD_RESET,
+            "/invites",
+          ];
+          const isOnExemptPath = exemptPaths.some((path) =>
+            window.location.pathname.startsWith(path)
+          );
+
+          if (isOnExemptPath) {
+            // Already on login/signup page, let the error propagate normally
+            return Promise.reject(error);
+          }
+
+          // Handle unauthorized error by redirecting
+          window.location.href = APP_ROUTE.AUTH.LOGIN;
+          // Return a never-resolving promise to prevent error propagation during redirect
+          return new Promise(() => {});
         }
         case 403:
           // Handle forbidden error
@@ -61,18 +80,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-function redirectToLogin() {
-  const exemptPaths = [
-    APP_ROUTE.AUTH.LOGIN,
-    APP_ROUTE.AUTH.SIGNUP,
-    APP_ROUTE.AUTH.FORGOT_PASSWORD,
-    APP_ROUTE.AUTH.PASSWORD_RESET,
-    "/invites",
-  ];
-  if (!exemptPaths.some((path) => window.location.pathname.startsWith(path))) {
-    window.location.href = APP_ROUTE.AUTH.LOGIN;
-  }
-}
 
 export default api;
