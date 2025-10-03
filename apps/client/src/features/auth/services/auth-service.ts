@@ -51,3 +51,11 @@ export async function getCollabToken(): Promise<ICollabToken> {
   const req = await api.post<ICollabToken>("/auth/collab-token");
   return req.data;
 }
+
+export async function loginLdap(data: {
+  username: string;
+  password: string;
+}): Promise<ILoginResponse> {
+  const response = await api.post<ILoginResponse>("/auth/login-ldap", data);
+  return response.data;
+}

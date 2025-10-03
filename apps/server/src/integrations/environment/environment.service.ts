@@ -213,4 +213,46 @@ export class EnvironmentService {
   getPostHogKey(): string {
     return this.configService.get<string>('POSTHOG_KEY');
   }
+
+  // LDAP Configuration
+  getLdapUrl(): string {
+    return this.configService.get<string>('LDAP_URL');
+  }
+
+  getLdapBindDn(): string {
+    return this.configService.get<string>('LDAP_BIND_DN');
+  }
+
+  getLdapBindPassword(): string {
+    return this.configService.get<string>('LDAP_BIND_PASSWORD');
+  }
+
+  getLdapBaseDn(): string {
+    return this.configService.get<string>('LDAP_BASE_DN');
+  }
+
+  getLdapUserFilter(): string {
+    return this.configService.get<string>(
+      'LDAP_USER_FILTER',
+      '(mail={{username}})',
+    );
+  }
+
+  getLdapTlsEnabled(): boolean {
+    const enabled = this.configService
+      .get<string>('LDAP_TLS_ENABLED', 'false')
+      .toLowerCase();
+    return enabled === 'true';
+  }
+
+  getLdapCaCert(): string {
+    return this.configService.get<string>('LDAP_CA_CERT');
+  }
+
+  getLdapAllowSignup(): boolean {
+    const allowSignup = this.configService
+      .get<string>('LDAP_ALLOW_SIGNUP', 'true')
+      .toLowerCase();
+    return allowSignup === 'true';
+  }
 }

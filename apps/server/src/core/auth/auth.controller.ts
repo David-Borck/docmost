@@ -9,7 +9,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import { LoginDto } from './dto/login.dto';
+import { LdapLoginDto } from './dto/ldap-login.dto';
 import { AuthService } from './services/auth.service';
+import { LdapService } from './services/ldap.service';
 import { SetupGuard } from './guards/setup.guard';
 import { EnvironmentService } from '../../integrations/environment/environment.service';
 import { CreateAdminUserDto } from './dto/create-admin-user.dto';
@@ -24,6 +26,8 @@ import { VerifyUserTokenDto } from './dto/verify-user-token.dto';
 import { FastifyReply } from 'fastify';
 import { validateSsoEnforcement } from './auth.util';
 import { ModuleRef } from '@nestjs/core';
+import { SignupService } from './services/signup.service';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -31,6 +35,8 @@ export class AuthController {
 
   constructor(
     private authService: AuthService,
+    private ldapService: LdapService,
+    private signupService: SignupService,
     private environmentService: EnvironmentService,
     private moduleRef: ModuleRef,
   ) {}
@@ -164,6 +170,65 @@ export class AuthController {
     @AuthWorkspace() workspace: Workspace,
   ) {
     return this.authService.getCollabToken(user, workspace.id);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('login-ldap')
+  async loginLdap(
+    @AuthWorkspace() workspace: Workspace,
+    @Res({ passthrough: true }) res: FastifyReply,
+    @Body() ldapLoginDto: LdapLoginDto,
+  ) {
+    // Authenticate user with LDAP
+    const ldapResult = await this.ldapService.authenticate(
+      ldapLoginDto.username,
+      ldapLoginDto.password,
+    );
+
+    // Find existing user by email
+    let user = await this.authService['userRepo'].findByEmail(
+      ldapResult.user.email,
+      workspace.id,
+    );
+
+    // Create user if not exists and signup is allowed
+    if (!user && this.environmentService.getLdapAllowSignup()) {
+      this.logger.log(
+        `Auto-creating user from LDAP: ${ldapResult.user.email}`,
+      );
+
+      const createUserDto: CreateUserDto = {
+        email: ldapResult.user.email,
+        name: ldapResult.user.name,
+        password: null, // LDAP users don't have local passwords
+      };
+
+      user = await this.signupService.signup(createUserDto, workspace.id);
+
+      // Mark user as having a generated (non-usable) password
+      await this.authService['userRepo'].updateUser(
+        { hasGeneratedPassword: true },
+        user.id,
+        workspace.id,
+      );
+    }
+
+    if (!user) {
+      throw new UnauthorizedException(
+        'User not found. LDAP signup is disabled.',
+      );
+    }
+
+    // Update last login
+    await this.authService['userRepo'].updateLastLogin(user.id, workspace.id);
+
+    // Generate JWT token
+    const authToken = await this.authService['tokenService'].generateAccessToken(
+      user,
+    );
+
+    this.setAuthCookie(res, authToken);
+    this.logger.log(`LDAP login successful for user: ${user.email}`);
   }
 
   @UseGuards(JwtAuthGuard)

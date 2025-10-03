@@ -224,6 +224,77 @@ Files in `apps/server/src/ee/` and `apps/client/src/ee/` are under the Docmost E
 - E2E tests in `apps/server/test/` directory
 - Frontend currently has no test setup (opportunity for contribution)
 
+## LDAP Authentication
+
+### Custom LDAP Integration (Option 3 - Direct Integration)
+
+A custom LDAP authentication system has been implemented using the `ldapts` library directly. This provides flexible LDAP integration without relying on the Enterprise Edition.
+
+**Backend Implementation**:
+
+```bash
+# Core files
+apps/server/src/core/auth/services/ldap.service.ts      # LDAP authentication service
+apps/server/src/core/auth/dto/ldap-login.dto.ts         # LDAP login DTO
+apps/server/src/core/auth/auth.controller.ts            # POST /auth/login-ldap endpoint
+apps/server/src/integrations/environment/environment.service.ts  # LDAP config getters
+```
+
+**Frontend Implementation**:
+
+```bash
+# Frontend files
+apps/client/src/features/auth/components/ldap-login-form.tsx  # LDAP login form
+apps/client/src/pages/auth/ldap-login.tsx                     # LDAP login page
+apps/client/src/features/auth/services/auth-service.ts        # loginLdap() function
+```
+
+**Configuration**:
+
+Set LDAP environment variables in `.env`:
+
+```bash
+LDAP_URL=ldap://ldap.example.com:389              # or ldaps://... for TLS
+LDAP_BIND_DN=cn=admin,dc=example,dc=com           # Service account DN
+LDAP_BIND_PASSWORD=admin_password                  # Service account password
+LDAP_BASE_DN=ou=users,dc=example,dc=com            # Base DN for user searches
+LDAP_USER_FILTER=(mail={{username}})               # Search filter ({{username}} placeholder)
+LDAP_TLS_ENABLED=false                             # Enable TLS/SSL
+LDAP_CA_CERT=                                      # PEM-encoded CA certificate (optional)
+LDAP_ALLOW_SIGNUP=true                             # Auto-create users from LDAP
+```
+
+**Authentication Flow**:
+
+1. User submits username/password to `POST /auth/login-ldap`
+2. LdapService binds to LDAP server as service account
+3. Searches for user in `LDAP_BASE_DN` using `LDAP_USER_FILTER`
+4. Validates user password by attempting bind as user
+5. Extracts user attributes (email, displayName, cn, etc.)
+6. Finds or creates Docmost user (if `LDAP_ALLOW_SIGNUP=true`)
+7. Generates JWT token and sets httpOnly cookie
+8. Redirects to home page
+
+**User Auto-Creation**:
+
+When `LDAP_ALLOW_SIGNUP=true`, users are automatically created on first LDAP login:
+- Email from LDAP `mail` attribute
+- Name from `displayName`, or `givenName + sn`, or `cn`
+- Marked with `hasGeneratedPassword=true` (no local password)
+- LDAP users cannot use standard email/password login
+
+**Testing LDAP Connection**:
+
+Use `LdapService.testConnection()` method to verify LDAP configuration without authenticating a user.
+
+**Security Notes**:
+
+- Service account credentials stored in environment variables
+- User passwords never stored, only used for LDAP bind
+- TLS/SSL recommended for production (`LDAP_TLS_ENABLED=true`)
+- CA certificate validation enabled when TLS is used
+- Failed authentication attempts logged for monitoring
+
 ## Important Notes
 
 - This is a monorepo managed by NX - use `nx` commands for cross-project operations
@@ -232,3 +303,4 @@ Files in `apps/server/src/ee/` and `apps/client/src/ee/` are under the Docmost E
 - Backend uses Fastify (not Express) - be aware of API differences
 - Collaboration server must run separately in production for real-time editing
 - Database migrations are one-way - always test rollbacks during development
+- LDAP authentication implemented as direct integration using `ldapts` library
